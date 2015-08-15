@@ -1,16 +1,15 @@
 package grow;
 
-import java.awt.Color;
 import java.awt.Dimension;
-import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.text.Format;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.LinkedHashMap;
 
 import javax.swing.BoxLayout;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
-import javax.swing.JFormattedTextField;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JMenu;
@@ -26,6 +25,7 @@ public class Gui {
 	
 	private JComboBox<String> comPortsBox;
 	private JFrame frame;
+	private Conector conector;
 	
 	public Gui() {
 		this.initGui();
@@ -49,8 +49,21 @@ public class Gui {
 		comSelectPanel.add(comLabel);
 		
 		this.comPortsBox = new JComboBox<String>(this.getPorts());  // ports list
-		comPortsBox.setBorder(new EmptyBorder(0, 0, 0, 10));
-		comSelectPanel.add(comPortsBox);
+		this.comPortsBox.setBorder(new EmptyBorder(0, 0, 0, 10));
+		this.comPortsBox.addActionListener(new ActionListener() {
+			
+			public void actionPerformed(ActionEvent e) {
+				// TODO: Creating connection to the chosen port
+				JComboBox<String> cb = (JComboBox<String>)e.getSource();
+				String itemValue = (String)cb.getSelectedItem();
+				if(itemValue == "---" || itemValue == null){
+					conector = null;
+				}else{
+					conector = new Conector((String)cb.getSelectedItem());
+				}
+			}
+		});
+		comSelectPanel.add(this.comPortsBox);
 		
 		JButton updateButton = new JButton("Обновить");
 		// Update ports list event
@@ -71,13 +84,23 @@ public class Gui {
 		 * Second block
 		 * Setters  
 		 */
+		HashMap<String, JPanel> panelMap = new HashMap<String, JPanel>();
+		Iterator<String> iterator = PanelsData.panelDataMap.keySet().iterator();
+		while (iterator.hasNext()) {
+			String prefix = (String) iterator.next();
+			panelMap.put(prefix, this.getInputPanel(PanelsData.panelDataMap.get(prefix)));
+		}
 		
-		JPanel sysTymePanel = this.getInputPanel("Время системы");
-		JPanel onTimePanel = this.getInputPanel("Включение нагрузки");
-		JPanel offTimePanel = this.getInputPanel("Выключение нагрузки");
-		JPanel limitTempPanel = this.getInputPanel("Пороговая температура");
-		
+	
 		JButton button = new JButton("Установить");
+		button.addActionListener(new ActionListener() {
+			
+			public void actionPerformed(ActionEvent e) {
+				// Sending info to device
+				System.out.println(conector);
+				
+			}
+		});
 		JPanel btnPanel = new JPanel();
 		btnPanel.setLayout(new BoxLayout(btnPanel, BoxLayout.LINE_AXIS));
 		btnPanel.add(button);
@@ -88,10 +111,11 @@ public class Gui {
 		JPanel panel = new JPanel();
 		panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
 		panel.add(comSelectPanel);
-		panel.add(sysTymePanel);
-		panel.add(onTimePanel);
-		panel.add(offTimePanel);
-		panel.add(limitTempPanel);
+		Iterator<JPanel> panelIterator = panelMap.values().iterator();
+		while (panelIterator.hasNext()) {
+			JPanel Inputpanel = (JPanel) panelIterator.next();
+			panel.add(Inputpanel);
+		}
 		panel.add(btnPanel);
 	
 		/*
@@ -119,14 +143,15 @@ public class Gui {
          * Main frame
          */
 
-		frame.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
-		frame.setMinimumSize(new Dimension(300, 200));
-		frame.setLocationRelativeTo(null);
-		frame.setJMenuBar(menu);
-		frame.add(panel);
-		frame.pack();
-		frame.setVisible(true);
+		this.frame.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
+		this.frame.setMinimumSize(new Dimension(300, 200));
+		this.frame.setLocationRelativeTo(null);
+		this.frame.setJMenuBar(menu);
+		this.frame.add(panel);
+		this.frame.pack();
+		this.frame.setVisible(true);
 	}
+	
 	
 	public String[] getPorts(){
 		String[] ports = {"---", "COM1", "COM2"};
@@ -152,6 +177,19 @@ public class Gui {
 		panel.add(label, 0);
 		panel.add(textField, 1);
 		return panel;
+	}
+	
+	/**
+	 * TODO: Move to config file
+	 */
+	public static class PanelsData{
+		public static LinkedHashMap<String, String> panelDataMap = new LinkedHashMap<String, String>();
+		static{
+			panelDataMap.put("setsystime", "Время системы");
+			panelDataMap.put("setontime", "Включение нагрузки");
+			panelDataMap.put("setoffstime", "Выключение нагрузки");
+			panelDataMap.put("settemperature", "Пороговая температура");
+		}
 	}
 
 }
