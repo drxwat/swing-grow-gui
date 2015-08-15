@@ -13,6 +13,10 @@ import javax.swing.JComboBox;
 import javax.swing.JFormattedTextField;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
+import javax.swing.JMenu;
+import javax.swing.JMenuBar;
+import javax.swing.JMenuItem;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
 import javax.swing.WindowConstants;
@@ -21,6 +25,7 @@ import javax.swing.border.EmptyBorder;
 public class Gui {
 	
 	private JComboBox<String> comPortsBox;
+	private JFrame frame;
 	
 	public Gui() {
 		this.initGui();
@@ -28,8 +33,9 @@ public class Gui {
 	
 	public void initGui(){
 		
-		/**
-		 * FIRST BLOCK
+		this.frame = new JFrame("Grow client");
+		/*
+		 * First block
 		 * COM select input & label 
 		 */
 		
@@ -61,10 +67,11 @@ public class Gui {
 
 		comSelectPanel.add(updateButton);
 		
-		/**
-		 * SECOND BLOCK
-		 * CURRENT TIME SETTINGS  
+		/*
+		 * Second block
+		 * Setters  
 		 */
+		
 		JPanel sysTymePanel = this.getInputPanel("Время системы");
 		JPanel onTimePanel = this.getInputPanel("Включение нагрузки");
 		JPanel offTimePanel = this.getInputPanel("Выключение нагрузки");
@@ -75,8 +82,8 @@ public class Gui {
 		btnPanel.setLayout(new BoxLayout(btnPanel, BoxLayout.LINE_AXIS));
 		btnPanel.add(button);
 		
-		/**
-		 * MAIN PANEL
+		/*
+		 * Main panel
 		 */
 		JPanel panel = new JPanel();
 		panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
@@ -87,11 +94,35 @@ public class Gui {
 		panel.add(limitTempPanel);
 		panel.add(btnPanel);
 	
+		/*
+		 * Menu
+		 */
+		JMenuItem about = new JMenuItem("О программе");
+		about.addActionListener(new ActionListener() {
+			
+			public void actionPerformed(ActionEvent e) {
+				JOptionPane.showMessageDialog(frame, "Клиент для устройства RTC-Termometer\nУстанавливает значения параметров устройсва");
+				
+			}
+		});
 		
-		JFrame frame = new JFrame("Grow client");
+        JMenu help = new JMenu("Помощь");
+		help.add(about);
+        
+		JMenuBar menu = new JMenuBar();
+		menu.setOpaque(true);
+        menu.setPreferredSize(new Dimension(300, 30));
+        menu.add(help);
+
+		
+        /*
+         * Main frame
+         */
+
 		frame.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
 		frame.setMinimumSize(new Dimension(300, 200));
 		frame.setLocationRelativeTo(null);
+		frame.setJMenuBar(menu);
 		frame.add(panel);
 		frame.pack();
 		frame.setVisible(true);
