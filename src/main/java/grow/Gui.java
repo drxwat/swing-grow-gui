@@ -21,6 +21,8 @@ import javax.swing.JTextField;
 import javax.swing.WindowConstants;
 import javax.swing.border.EmptyBorder;
 
+import jssc.SerialPortException;
+
 public class Gui {
 	
 	private JComboBox<String> comPortsBox;
@@ -59,7 +61,13 @@ public class Gui {
 				if(itemValue == "---" || itemValue == null){
 					conector = null;
 				}else{
-					conector = new Conector((String)cb.getSelectedItem());
+					try{
+						conector = new Conector((String)cb.getSelectedItem());
+					}catch(SerialPortException spe){
+						JOptionPane.showMessageDialog(null, "Невозможно открыть порт " + (String)cb.getSelectedItem(), "Ошибка", JOptionPane.ERROR_MESSAGE);
+						conector = null;
+						cb.setSelectedItem("---");
+					}
 				}
 			}
 		});
@@ -125,7 +133,7 @@ public class Gui {
 		about.addActionListener(new ActionListener() {
 			
 			public void actionPerformed(ActionEvent e) {
-				JOptionPane.showMessageDialog(frame, "Клиент для устройства RTC-Termometer\nУстанавливает значения параметров устройсва");
+				JOptionPane.showMessageDialog(null, "Клиент для устройства RTC-Termometer\nУстанавливает значения параметров устройсва", "О программе", JOptionPane.INFORMATION_MESSAGE);
 				
 			}
 		});
