@@ -1,5 +1,6 @@
 package grow;
 
+import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
@@ -13,6 +14,7 @@ import javax.swing.JFormattedTextField;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.JTextField;
 import javax.swing.WindowConstants;
 import javax.swing.border.EmptyBorder;
 
@@ -63,8 +65,15 @@ public class Gui {
 		 * SECOND BLOCK
 		 * CURRENT TIME SETTINGS  
 		 */
-		JPanel currentTimeLabelBox = this.getTwoInputedPanel("Установка времени системы", "Часы", "Минуты");
+		JPanel sysTymePanel = this.getInputPanel("Время системы");
+		JPanel onTimePanel = this.getInputPanel("Включение нагрузки");
+		JPanel offTimePanel = this.getInputPanel("Выключение нагрузки");
+		JPanel limitTempPanel = this.getInputPanel("Пороговая температура");
 		
+		JButton button = new JButton("Установить");
+		JPanel btnPanel = new JPanel();
+		btnPanel.setLayout(new BoxLayout(btnPanel, BoxLayout.LINE_AXIS));
+		btnPanel.add(button);
 		
 		/**
 		 * MAIN PANEL
@@ -72,12 +81,16 @@ public class Gui {
 		JPanel panel = new JPanel();
 		panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
 		panel.add(comSelectPanel);
-		panel.add(currentTimeLabelBox);
+		panel.add(sysTymePanel);
+		panel.add(onTimePanel);
+		panel.add(offTimePanel);
+		panel.add(limitTempPanel);
+		panel.add(btnPanel);
 	
 		
-		JFrame frame = new JFrame("Grow GUI");
+		JFrame frame = new JFrame("Grow client");
 		frame.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
-		frame.setMinimumSize(new Dimension(300, 400));
+		frame.setMinimumSize(new Dimension(300, 200));
 		frame.setLocationRelativeTo(null);
 		frame.add(panel);
 		frame.pack();
@@ -89,35 +102,24 @@ public class Gui {
 		return ports;
 	}
 	
-	public JPanel getTwoInputedPanel(String commonTitle, String firstTitle, String secondTitle){
-		JPanel labelPanel = new JPanel();
-		labelPanel.setLayout(new BoxLayout(labelPanel, BoxLayout.X_AXIS));
-		labelPanel.setMaximumSize(new Dimension(30, 80));
-		labelPanel.setBorder(new EmptyBorder(10, 10, 10, 10));
-		labelPanel.add(new JLabel("<html>" + commonTitle + "</html>"));
+	/**
+	 * Text field component has index 1
+	 * @param labelText
+	 * @param prefix
+	 * @return
+	 */
+	public JPanel getInputPanel(String labelText){
 		
-		JPanel inputsPanel = new JPanel();
-		inputsPanel.setMaximumSize(new Dimension(150, 85));
-		inputsPanel.setLayout(new BoxLayout(inputsPanel, BoxLayout.Y_AXIS));
-		inputsPanel.add(new JLabel(firstTitle));
-		inputsPanel.add(new JFormattedTextField());
-		inputsPanel.add(new JLabel(secondTitle));
-		inputsPanel.add(new JFormattedTextField());
+		JLabel label = new JLabel("<html>" + labelText + "</html>");
+		label.setPreferredSize(new Dimension(150, 50));
 		
-		JPanel buttonsPanel = new JPanel();
-		buttonsPanel.setLayout(new BoxLayout(buttonsPanel, BoxLayout.Y_AXIS));
-		buttonsPanel.add(new JButton("Отправить"));
-		buttonsPanel.add(new JButton("Отправить"));
+		JTextField textField = new JTextField();
 		
-		/*
-		 * Common panel
-		 */
 		JPanel panel = new JPanel();
 		panel.setLayout(new BoxLayout(panel, BoxLayout.X_AXIS));
-		panel.setMaximumSize(new Dimension(300, 85));
-		panel.add(labelPanel);
-		panel.add(inputsPanel);
-		panel.add(buttonsPanel);
+		panel.setMaximumSize(new Dimension(250, 30));
+		panel.add(label, 0);
+		panel.add(textField, 1);
 		return panel;
 	}
 
