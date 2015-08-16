@@ -23,48 +23,60 @@ import javax.swing.border.EmptyBorder;
 
 import jssc.SerialPortException;
 
-public class Gui {
-	
+/**
+ * Class that manipulating only GUI without any logic of working with SerialPort
+ * abstraction
+ * 
+ * @author drxwat
+ *
+ */
+public class Gui implements MessageListener{
+
 	private JComboBox<String> comPortsBox;
-	private JFrame frame;
 	private Conector conector;
-	
+	private JLabel portStatusLabel;
+
 	public Gui() {
 		this.initGui();
 	}
-	
-	public void initGui(){
+
+	public void initGui() {
+
 		
-		this.frame = new JFrame("Grow client");
 		/*
-		 * First block
-		 * COM select input & label 
+		 * First block COM select input & label
 		 */
-		
+
 		JPanel comSelectPanel = new JPanel();
 		comSelectPanel.setLayout(new BoxLayout(comSelectPanel, BoxLayout.X_AXIS));
 		comSelectPanel.setMaximumSize(new Dimension(300, 45));
 		comSelectPanel.setBorder(new EmptyBorder(10, 10, 10, 10));
-		
+
 		JLabel comLabel = new JLabel("Порт: ");
 		comLabel.setBorder(new EmptyBorder(10, 10, 10, 10));
 		comSelectPanel.add(comLabel);
-		
-		this.comPortsBox = new JComboBox<String>(this.getPorts());  // ports list
+
+		this.comPortsBox = new JComboBox<String>(this.getPorts()); // ports list
 		this.comPortsBox.setBorder(new EmptyBorder(0, 0, 0, 10));
 		this.comPortsBox.addActionListener(new ActionListener() {
-			
+
 			public void actionPerformed(ActionEvent e) {
 				// TODO: Creating connection to the chosen port
-				JComboBox<String> cb = (JComboBox<String>)e.getSource();
-				String itemValue = (String)cb.getSelectedItem();
-				if(itemValue == "---" || itemValue == null){
+				JComboBox<String> cb = (JComboBox<String>) e.getSource();
+				String itemValue = (String) cb.getSelectedItem();
+				if (itemValue == "---" || itemValue == null) {
 					conector = null;
-				}else{
-					try{
-						conector = new Conector((String)cb.getSelectedItem());
-					}catch(SerialPortException spe){
-						JOptionPane.showMessageDialog(null, "Невозможно открыть порт " + (String)cb.getSelectedItem(), "Ошибка", JOptionPane.ERROR_MESSAGE);
+				} else {
+					try {
+						// COnecting to chosen serial port
+						conector = new Conector((String) cb.getSelectedItem(), Gui.this);
+
+						JOptionPane.showMessageDialog(null, "Подключение успешно установлено", "Успех",
+								JOptionPane.INFORMATION_MESSAGE);
+					} catch (SerialPortException spe) {
+						JOptionPane.showMessageDialog(null, "Ошибка при подключении к порту "
+								+ (String) cb.getSelectedItem() + "\n" + spe.getMessage(), "Ошибка",
+								JOptionPane.ERROR_MESSAGE);
 						conector = null;
 						cb.setSelectedItem("---");
 					}
@@ -72,25 +84,24 @@ public class Gui {
 			}
 		});
 		comSelectPanel.add(this.comPortsBox);
-		
+
 		JButton updateButton = new JButton("Обновить");
 		// Update ports list event
 		updateButton.addActionListener(new ActionListener() {
-			
+
 			public void actionPerformed(ActionEvent e) {
 				comPortsBox.removeAllItems();
 				String[] newPorts = getPorts();
-				for(int i = 0; i < newPorts.length; i++){
+				for (int i = 0; i < newPorts.length; i++) {
 					comPortsBox.addItem(newPorts[i]);
 				}
 			}
 		});
 
 		comSelectPanel.add(updateButton);
-		
+
 		/*
-		 * Second block
-		 * Setters  
+		 * Second block Setters
 		 */
 		HashMap<String, JPanel> panelMap = new HashMap<String, JPanel>();
 		Iterator<String> iterator = PanelsData.panelDataMap.keySet().iterator();
@@ -98,21 +109,33 @@ public class Gui {
 			String prefix = (String) iterator.next();
 			panelMap.put(prefix, this.getInputPanel(PanelsData.panelDataMap.get(prefix)));
 		}
-		
-	
+
 		JButton button = new JButton("Установить");
 		button.addActionListener(new ActionListener() {
-			
+
 			public void actionPerformed(ActionEvent e) {
 				// Sending info to device
 				System.out.println(conector);
-				
+
 			}
 		});
 		JPanel btnPanel = new JPanel();
 		btnPanel.setLayout(new BoxLayout(btnPanel, BoxLayout.LINE_AXIS));
 		btnPanel.add(button);
-		
+
+		/*
+		 * Status area
+		 */
+
+		this.portStatusLabel = new JLabel(
+				"<html>Выберите порт к которому подключено устройство для отображения информации о последнем</html>");
+		this.portStatusLabel.setBorder(new EmptyBorder(10, 10, 10, 10));
+		this.portStatusLabel.setPreferredSize(new Dimension(300, 50));
+
+		JPanel statusPanel = new JPanel();
+		statusPanel.setLayout(new BoxLayout(statusPanel, BoxLayout.LINE_AXIS));
+		statusPanel.add(this.portStatusLabel);
+
 		/*
 		 * Main panel
 		 */
@@ -125,60 +148,61 @@ public class Gui {
 			panel.add(Inputpanel);
 		}
 		panel.add(btnPanel);
-	
+		panel.add(statusPanel);
 		/*
 		 * Menu
 		 */
 		JMenuItem about = new JMenuItem("О программе");
 		about.addActionListener(new ActionListener() {
-			
+
 			public void actionPerformed(ActionEvent e) {
-				JOptionPane.showMessageDialog(null, "Клиент для устройства RTC-Termometer\nУстанавливает значения параметров устройсва", "О программе", JOptionPane.INFORMATION_MESSAGE);
-				
+				JOptionPane.showMessageDialog(null,
+						"Клиент для устройства RTC-Termometer\nУстанавливает значения параметров устройсва",
+						"О программе", JOptionPane.INFORMATION_MESSAGE);
+
 			}
 		});
-		
-        JMenu help = new JMenu("Помощь");
+
+		JMenu help = new JMenu("Помощь");
 		help.add(about);
-        
+
 		JMenuBar menu = new JMenuBar();
 		menu.setOpaque(true);
-        menu.setPreferredSize(new Dimension(300, 30));
-        menu.add(help);
+		menu.setPreferredSize(new Dimension(300, 30));
+		menu.add(help);
 
-		
-        /*
-         * Main frame
-         */
-
-		this.frame.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
-		this.frame.setMinimumSize(new Dimension(300, 200));
-		this.frame.setLocationRelativeTo(null);
-		this.frame.setJMenuBar(menu);
-		this.frame.add(panel);
-		this.frame.pack();
-		this.frame.setVisible(true);
+		/*
+		 * Main frame
+		 */
+		JFrame frame = new JFrame("Grow client");
+		frame.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
+		frame.setMinimumSize(new Dimension(300, 200));
+		frame.setLocationRelativeTo(null);
+		frame.setJMenuBar(menu);
+		frame.add(panel);
+		frame.pack();
+		frame.setVisible(true);
 	}
-	
-	
-	public String[] getPorts(){
-		String[] ports = {"---", "COM1", "COM2"};
+
+	public String[] getPorts() {
+		String[] ports = { "---", "COM1", "COM2" };
 		return ports;
 	}
-	
+
 	/**
 	 * Text field component has index 1
+	 * 
 	 * @param labelText
 	 * @param prefix
 	 * @return
 	 */
-	public JPanel getInputPanel(String labelText){
-		
+	public JPanel getInputPanel(String labelText) {
+
 		JLabel label = new JLabel("<html>" + labelText + "</html>");
 		label.setPreferredSize(new Dimension(150, 50));
-		
+
 		JTextField textField = new JTextField();
-		
+
 		JPanel panel = new JPanel();
 		panel.setLayout(new BoxLayout(panel, BoxLayout.X_AXIS));
 		panel.setMaximumSize(new Dimension(250, 30));
@@ -188,11 +212,19 @@ public class Gui {
 	}
 	
 	/**
+	 * TODO: Parse received 
+	 */
+	public void messageReceived(MessageEvent messageEvent) {
+		this.portStatusLabel.setText(messageEvent.getMessage());
+	}
+	
+	/**
 	 * TODO: Move to config file
 	 */
-	public static class PanelsData{
+	public static class PanelsData {
 		public static LinkedHashMap<String, String> panelDataMap = new LinkedHashMap<String, String>();
-		static{
+
+		static {
 			panelDataMap.put("setsystime", "Время системы");
 			panelDataMap.put("setontime", "Включение нагрузки");
 			panelDataMap.put("setoffstime", "Выключение нагрузки");
