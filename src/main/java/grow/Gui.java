@@ -30,11 +30,12 @@ import jssc.SerialPortException;
  * @author drxwat
  *
  */
-public class Gui implements MessageListener{
+public class Gui implements MessageListener {
 
 	private JComboBox<String> comPortsBox;
 	private Conector conector;
 	private JLabel portStatusLabel;
+	private HashMap<String, JPanel> panelMap;
 
 	public Gui() {
 		this.initGui();
@@ -42,7 +43,6 @@ public class Gui implements MessageListener{
 
 	public void initGui() {
 
-		
 		/*
 		 * First block COM select input & label
 		 */
@@ -103,7 +103,7 @@ public class Gui implements MessageListener{
 		/*
 		 * Second block Setters
 		 */
-		HashMap<String, JPanel> panelMap = new HashMap<String, JPanel>();
+		this.panelMap = new HashMap<String, JPanel>();
 		Iterator<String> iterator = PanelsData.panelDataMap.keySet().iterator();
 		while (iterator.hasNext()) {
 			String prefix = (String) iterator.next();
@@ -115,7 +115,25 @@ public class Gui implements MessageListener{
 
 			public void actionPerformed(ActionEvent e) {
 				// Sending info to device
-				System.out.println(conector);
+				if (conector instanceof Conector) {
+					Iterator<String> iterator = Gui.this.panelMap.keySet().iterator();
+					while (iterator.hasNext()) {
+						String prefix = (String) iterator.next();
+						JTextField textField = (JTextField)Gui.this.panelMap.get(prefix).getComponent(1);
+						String value = textField.getText();
+						if(!value.isEmpty()){
+							try {
+								Gui.this.conector.sendData(prefix + value);
+							} catch (SerialPortException e1) {
+								JOptionPane.showMessageDialog(null, "Ошибка отправки данных " + e1.getMessage(), "Ошибка",
+										JOptionPane.ERROR_MESSAGE);
+							}
+						}
+					}
+				} else {
+					JOptionPane.showMessageDialog(null, "Сначала выберите порт для отправки данных", "Выберите порт",
+							JOptionPane.INFORMATION_MESSAGE);
+				}
 
 			}
 		});
@@ -142,7 +160,7 @@ public class Gui implements MessageListener{
 		JPanel panel = new JPanel();
 		panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
 		panel.add(comSelectPanel);
-		Iterator<JPanel> panelIterator = panelMap.values().iterator();
+		Iterator<JPanel> panelIterator = this.panelMap.values().iterator();
 		while (panelIterator.hasNext()) {
 			JPanel Inputpanel = (JPanel) panelIterator.next();
 			panel.add(Inputpanel);
@@ -210,14 +228,14 @@ public class Gui implements MessageListener{
 		panel.add(textField, 1);
 		return panel;
 	}
-	
+
 	/**
-	 * TODO: Parse received 
+	 * TODO: Parse received
 	 */
 	public void messageReceived(MessageEvent messageEvent) {
 		this.portStatusLabel.setText(messageEvent.getMessage());
 	}
-	
+
 	/**
 	 * TODO: Move to config file
 	 */
