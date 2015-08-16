@@ -253,7 +253,7 @@ public class Gui implements MessageListener {
 		static {
 			panelDataMap.put("setsystime", "Время системы");
 			panelDataMap.put("setontime", "Включение нагрузки");
-			panelDataMap.put("setoffstime", "Выключение нагрузки");
+			panelDataMap.put("setofftime", "Выключение нагрузки");
 			panelDataMap.put("settemperature", "Пороговая температура");
 		}
 	}
