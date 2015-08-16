@@ -3,6 +3,7 @@ package grow;
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
@@ -22,6 +23,7 @@ import javax.swing.WindowConstants;
 import javax.swing.border.EmptyBorder;
 
 import jssc.SerialPortException;
+import jssc.SerialPortList;
 
 /**
  * Class that manipulating only GUI without any logic of working with SerialPort
@@ -203,8 +205,14 @@ public class Gui implements MessageListener {
 	}
 
 	public String[] getPorts() {
-		String[] ports = { "---", "COM1", "COM2" };
-		return ports;
+		ArrayList<String> portsList = new ArrayList<String>();
+		portsList.add("---");
+		String[] ports = SerialPortList.getPortNames();
+		for(int i = 0; i < ports.length; i++){
+			portsList.add(ports[i]);
+		}
+		
+		return portsList.toArray(new String[portsList.size()]);
 	}
 
 	/**
